@@ -28,7 +28,14 @@ export class CreateUserService {
         password: passHash
       }
     })
-    return newUser;
+
+    const generateToken = new GenerateToken()
+    const token = await generateToken.execute(newUser.id)
+
+    const generateRefreshToken = new GenerateRefreshToken();
+    await generateRefreshToken.execute(newUser.id);
+
+    return {id: newUser.id, name: newUser.name, token};
   }
 }
 
@@ -68,7 +75,13 @@ export class AuthenticateUserService {
 
 export class ListUserService {
   async execute() {
-    const users = await client.user.findMany()
+    const users = await client.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        username: true,
+      },
+    })
     return users
   }
 }
